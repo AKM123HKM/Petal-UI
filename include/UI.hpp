@@ -47,50 +47,6 @@ struct TextElement{
 
 using Element = std::variant<RectElement,TextElement>;
 
-enum WidgetType{
-    Button
-};
-
-struct Widget{
-    WidgetType type;
-    virtual void update(Vec2 mouse_pos,bool click) = 0;
-    virtual void draw(std::vector<Element>& buffer) = 0;
-};
-
-struct ButtonParam{
-    WidgetType type;
-    std::string text;
-    Vec2 pos;
-    Vec2 pos_offset;
-    Vec2 size;
-    Color bg_color;
-    Color hover_color;
-    Color text_color;
-    int font_id;
-    float text_size;
-    float padding;
-};
-
-struct ButtonWidget:Widget{
-    Vec2 pos;
-    Vec2 pos_offset; // offset required to align the text and the rectangle (don't ask why)
-    Vec2 size;
-    Color active_color;
-    Color bg_color;
-    Color hover_color;
-    std::string text;
-    Color text_color;
-    int font_id;
-    float text_size;
-    float padding;
-
-    ButtonWidget(const ButtonParam& data);
-    
-    bool isHovering(const Vec2& mouse_pos);
-    void update(Vec2 mouse_pos, bool click);
-    void draw(std::vector<Element>& buffer);
-};
-
 struct MouseButton{
     bool isPressed;
     bool wasPressed;
@@ -113,13 +69,95 @@ struct Mouse{
     void updateLeftMouseButton(bool AisPressed);
     void updateRightMouseButton(bool AisPressed);
     void updateMiddleMouseButton(bool AisPressed);
+    bool isDragging(MouseButtonType type);
     bool isClicked(MouseButtonType type);
+};
+
+enum WidgetType{
+    Button,
+    Slider
+};
+
+struct Widget{
+    WidgetType type;
+    virtual void update(Mouse& mouse) = 0;
+    virtual void draw(std::vector<Element>& buffer) = 0;
+};
+
+struct ButtonParam{
+    WidgetType type;
+    std::string text;
+    Vec2 pos;
+    Vec2 pos_offset;
+    Vec2 size;
+    Color bg_color;
+    Color hover_color;
+    Color text_color;
+    int font_id;
+    float text_size;
+    float padding;
+};
+
+struct ButtonWidget:Widget{
+    std::string text;
+    Vec2 pos;
+    Vec2 pos_offset; // offset required to align the text and the rectangle (don't ask why)
+    Vec2 size;
+    Color active_color;
+    Color bg_color;
+    Color hover_color;
+    Color text_color;
+    int font_id;
+    float text_size;
+    float padding;
+
+    ButtonWidget(const ButtonParam& data);
+    
+    bool isHovering(const Vec2& mouse_pos);
+    void update(Mouse& mouse);
+    void draw(std::vector<Element>& buffer);
+};
+
+struct SliderParam{
+    Vec2 range;
+    Vec2 track_pos;
+    Vec2 track_size;
+    Vec2 handle_size;
+    Color track_color;
+    Color handle_base_color;
+    Color handle_hover_color;
+    WidgetType type;
+    float value;
+    float step;
+    bool orientation;
+};
+
+struct SliderWidget:Widget{
+    Vec2 range;
+    Vec2 track_pos;
+    Vec2 handle_pos;
+    Vec2 track_size;
+    Vec2 handle_size;
+    Color track_color;
+    Color handle_base_color;
+    Color handle_hover_color;
+    Color handle_active_color;
+    WidgetType type;
+    float value;
+    float step;
+    bool orientation;
+    bool selected;
+
+    SliderWidget(const SliderParam& data);
+    bool isHovering(const Vec2& mouse_pos);
+    void update(Mouse& mouse);
+    void draw(std::vector<Element>& buffer);
 };
 
 class UI{
 public:
     std::vector<std::unique_ptr<Widget>> widgets;
-    std::vector<Element> frameRenderBuffer;
+    std::vector<Element> frame_render_buffer;
     Mouse mouse;
 
     UI(json& data,TextMeasurer m);
@@ -128,5 +166,5 @@ public:
 private:
     TextMeasurer measure;
     ButtonParam parseButtonData(json& data);
-    void addButton(ButtonParam& data);
+    SliderParam parseSliderData(json& data);
 };

@@ -22,7 +22,11 @@ void drawText(sf::RenderWindow& window, TextElement* element, sf::Font& font){
 }
 
 int main() {
+    #pragma region Initialising window
     sf::RenderWindow window(sf::VideoMode({800, 800}), "SFML 3 Test");
+    #pragma endregion
+
+    // Clock to track the delta time and dt_update_clock to update the rendered dt after some time instead of every frame
     sf::Clock clock;
     sf::Clock dt_update_clock;
 
@@ -42,6 +46,7 @@ int main() {
     });
 
     float dt = 0.0f;
+    // ms_text = microsecond text
     sf::Text ms_text(fonts[0],std::to_string(dt),32);
     ms_text.setPosition(sf::Vector2f(0,0));
     ms_text.setFillColor(sf::Color(255,255,255));
@@ -68,7 +73,7 @@ int main() {
 
         window.clear();
 
-        for(auto& element: ui.frameRenderBuffer){
+        for(auto& element: ui.frame_render_buffer){
             std::visit([&](auto&& arg) {
                 using T = std::decay_t<decltype(arg)>;
                 if constexpr (std::is_same_v<T, RectElement>) {

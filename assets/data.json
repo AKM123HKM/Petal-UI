@@ -32,6 +32,19 @@
             "font_id":0,
             "text_size":32,
             "padding":8
+        },
+        {
+            "type":"Slider",
+            "pos":[300,20],
+            "orientation":"vertical",
+            "track_size":[20,300],
+            "handle_size":[20,30],
+            "value":0,
+            "range":[0,100],
+            "step":1,
+            "track_color":[100,100,100],
+            "handle_base_color":[150,150,150],
+            "handle_hover_color":[50,50,50]
         }
     ]
 }
