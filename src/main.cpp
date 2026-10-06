@@ -5,6 +5,20 @@
 #include <fstream>
 #include "UI.hpp"
 
+/*
+TODO: add a way to let the button have custom sizes instead of just the size of the text + padding (if the size is smaller
+ than the text + padding then default to text + padding, if the size is bigger than text + padding then use the custom size)
+
+ if the button have a custom size then the text should be centred in the button (toggle)
+
+ add a way to let the group either set size to its children or have a custom size (if the size is smaller than the children then default to children size, 
+ if the size is bigger than the children then use the custom size)
+
+ if the group have a custom size then the children should be resized to fill the group size (toggle)
+
+ let the slider show the value on top of it whenver it's handle is selected (toggle)
+*/
+
 using json = nlohmann::json;
 
 void drawRect(sf::RenderWindow& window, RectElement* element){

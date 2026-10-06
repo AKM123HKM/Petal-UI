@@ -1,50 +1,116 @@
 {
     "ui":[
         {
-            "type":"Button",
-            "pos":[100,300],
-            "bg_color":[255,255,255],
-            "hover_color":[100,100,100],
-            "text":"Harshit",
-            "text_color":[0,0,255],
-            "font_id":0,
-            "text_size":32,
-            "padding":8
+    "type": "Group",
+    "bg_color": [200, 200, 200],
+    "pos": [50, 50],
+    "padding": 10,
+    "positioning": "automatic",
+    "orientation": "vertical",
+    "widgets": [
+        {
+            "type": "Group",
+            "bg_color": [180, 100, 100],
+            "pos": [0, 0],
+            "padding": 8,
+            "positioning": "automatic",
+            "orientation": "horizontal",
+            "widgets": [
+                {
+                    "type": "Button",
+                    "pos": [0, 0],
+                    "text": "Group1-A"
+                },
+                {
+                    "type": "Button",
+                    "pos": [0, 0],
+                    "text": "Group1-B"
+                }
+            ]
         },
         {
-            "type":"Button",
-            "pos":[100,200],
-            "bg_color":[255,255,255],
-            "hover_color":[100,100,100],
-            "text":"Ankit",
-            "text_color":[0,0,255],
-            "font_id":0,
-            "text_size":32,
-            "padding":8
+            "type": "Group",
+            "bg_color": [100, 180, 100],
+            "pos": [0, 0],
+            "padding": 12,
+            "positioning": "automatic",
+            "orientation": "vertical",
+            "widgets": [
+                {
+                    "type": "Button",
+                    "pos": [0, 0],
+                    "text": "Group2-A"
+                },
+                {
+                    "type": "Button",
+                    "pos": [0, 0],
+                    "text": "Group2-B"
+                }
+            ]
         },
         {
-            "type":"Button",
-            "pos":[100,50],
-            "bg_color":[255,255,255],
-            "hover_color":[100,100,100],
-            "text":"Ansh",
-            "text_color":[0,0,255],
-            "font_id":0,
-            "text_size":32,
-            "padding":8
+            "type": "Group",
+            "bg_color": [100, 100, 180],
+            "pos": [0, 0],
+            "padding": 15,
+            "positioning": "automatic",
+            "orientation": "horizontal",
+            "widgets": [
+                {
+                    "type": "Slider",
+                    "pos": [0, 0],
+                    "track_size": [20, 200],
+                    "handle_size": [30, 20],
+                    "orientation": "vertical"
+                },
+                {
+                    "type": "Slider",
+                    "pos": [0, 0],
+                    "track_size": [20, 200],
+                    "handle_size": [30, 20],
+                    "orientation": "vertical"
+                },
+                {
+                    "type": "Slider",
+                    "pos": [0, 0],
+                    "track_size": [20, 200],
+                    "handle_size": [30, 20],
+                    "orientation": "vertical"
+                }
+            ]
         },
         {
-            "type":"Slider",
-            "pos":[300,20],
-            "orientation":"vertical",
-            "track_size":[20,300],
-            "handle_size":[20,30],
-            "value":0,
-            "range":[0,100],
-            "step":1,
-            "track_color":[100,100,100],
-            "handle_base_color":[150,150,150],
-            "handle_hover_color":[50,50,50]
+            "type": "Group",
+            "bg_color": [180, 180, 100],
+            "pos": [0, 0],
+            "padding": 15,
+            "positioning": "automatic",
+            "orientation": "vertical",
+            "widgets": [
+                {
+                    "type": "Button",
+                    "pos": [0, 0],
+                    "text": "Group4-A"
+                }
+            ]
         }
     ]
+}
+    ],
+    "defaults":{
+        "font_id":0,
+        "text_size":32,
+        "padding":8,
+        "bg_color":[255,255,255],
+        "hover_color":[100,100,100],
+        "text_color":[0,0,255],
+        "track_color":[100,100,100],
+        "handle_base_color":[150,150,150],
+        "handle_hover_color":[50,50,50],
+        "step":1,
+        "value":0,
+        "range":[0,100],
+        "track_size":[300,20],
+        "handle_size":[30,20]
+    }
 }

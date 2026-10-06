@@ -74,6 +74,8 @@ struct Mouse{
 };
 
 enum WidgetType{
+    Rectangle,
+    Label,
     Button,
     Slider
 };
@@ -82,6 +84,42 @@ struct Widget{
     WidgetType type;
     virtual void update(Mouse& mouse) = 0;
     virtual void draw(std::vector<Element>& buffer) = 0;
+    virtual void setPosition(const Vec2& new_pos) = 0;
+    virtual Vec2 getPosition() = 0;
+    virtual void setSize(const Vec2& new_size) = 0;
+    virtual Vec2 getSize() = 0;
+};
+
+struct RectWidget:Widget{
+    Vec2 pos;
+    Vec2 size;
+    Color base_color;
+    Color hover_color;
+    Color active_color;
+
+    RectWidget(const Vec2& Apos,const Vec2& Asize,const Color& Abase_color,const Color& Ahover_color);
+    void update(Mouse& mouse);
+    void draw(std::vector<Element>& buffer);
+    void setPosition(const Vec2& new_pos);
+    Vec2 getPosition();
+    void setSize(const Vec2& new_size);
+    Vec2 getSize();
+};
+
+struct LabelWidget:Widget{
+    std::string text;
+    Vec2 pos;
+    Color color;
+    float size;
+    int font_id;
+
+    LabelWidget(const std::string& Atext,float Asize,const Vec2& Apos,const Color& Acolor,int Afont_id);
+    void update(Mouse& mouse);
+    void draw(std::vector<Element>& buffer);
+    void setPosition(const Vec2& new_pos);
+    Vec2 getPosition();
+    void setSize(const Vec2& new_size);
+    Vec2 getSize();
 };
 
 struct ButtonParam{
@@ -116,6 +154,10 @@ struct ButtonWidget:Widget{
     bool isHovering(const Vec2& mouse_pos);
     void update(Mouse& mouse);
     void draw(std::vector<Element>& buffer);
+    void setPosition(const Vec2& new_pos);
+    Vec2 getPosition();
+    void setSize(const Vec2& new_size);
+    Vec2 getSize();
 };
 
 struct SliderParam{
@@ -152,6 +194,10 @@ struct SliderWidget:Widget{
     bool isHovering(const Vec2& mouse_pos);
     void update(Mouse& mouse);
     void draw(std::vector<Element>& buffer);
+    void setPosition(const Vec2& new_pos);
+    Vec2 getPosition();
+    void setSize(const Vec2& new_size);
+    Vec2 getSize();
 };
 
 class UI{
@@ -165,6 +211,7 @@ public:
 
 private:
     TextMeasurer measure;
-    ButtonParam parseButtonData(json& data);
-    SliderParam parseSliderData(json& data);
+    ButtonParam parseButtonData(json& data,json& defaults);
+    SliderParam parseSliderData(json& data,json& defaults);
+    void addGroup(json& data,json& defaults);
 };
