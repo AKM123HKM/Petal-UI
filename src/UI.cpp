@@ -40,7 +40,7 @@ Vec2 getVec2(json& data){
     return Vec2{data[0],data[1]};
 }
 
-float magnitude(const Vec2& v1, const Vec2& v2){
+float distance(const Vec2& v1, const Vec2& v2){
     return std::sqrt(std::pow(v2.x - v1.x,2) + std::pow(v2.y - v1.y,2));
 }
 
@@ -228,7 +228,7 @@ bool SliderWidget::isHovering(const Vec2& mouse_pos){
 void SliderWidget::update(Mouse& mouse){
     if(isHovering(mouse.mouse_pos)){
         handle_active_color = handle_hover_color;
-        if(mouse.buttons[MouseButtonType::Left].isPressed){
+        if(!(mouse.buttons[MouseButtonType::Left].wasPressed) & mouse.buttons[MouseButtonType::Left].isPressed){
             selected = true;
         }
     }
@@ -285,6 +285,7 @@ Vec2 SliderWidget::getSize(){
 
 #pragma endregion
 
+#pragma region Mouse
 Mouse::Mouse(){
     buttons = {
         {MouseButtonType::Left,MouseButton{false,false}},
@@ -325,11 +326,13 @@ bool Mouse::isClicked(MouseButtonType type){
 }
 
 bool Mouse::isDragging(MouseButtonType type){
-    if(buttons[type].isPressed && buttons[type].wasPressed & magnitude(mouse_pos,mouse_pos-drag) > drag_threshold){
+    if(buttons[type].isPressed && buttons[type].wasPressed & (std::abs(drag.x) >= drag_threshold || std::abs(drag.y) >= drag_threshold)){
         return true;
     }
     return false;
 }
+
+#pragma endregion
 
 UI::UI(json& data,TextMeasurer m){
     measure = m;
@@ -346,13 +349,7 @@ UI::UI(json& data,TextMeasurer m){
     }
 }
 
-void UI::addGroup(json& data,json& defaults){
-    /* Three problems with this implementation with handling nested groups 
-      1) The last button isn't visible for some reason (solved, i was overwriting the last button with the group rectangle, now i store the index of the group rectangle and overwrite that instead of the last element in the vector)
-      2) The group as a widget get placed at the absoulte position when it should have been placed relative to its parent group, same
-         with widgets in absoulte positioning. (partially solved, i now add the parent group position to the child group position, but we still need to do this for widgets in absoulte positioning)
-      3) The size/position isn't being calculated for widgets inside the nested group*/
-    
+void UI::addGroup(json& data,json& defaults){    
     Vec2 size = Vec2{data.at("padding"),data.at("padding")};
     int group_widget_index = widgets.size();
     widgets.emplace_back(std::make_unique<RectWidget>(Vec2{0,0},Vec2{0,0},Color{0,0,0},Color{0,0,0}));
@@ -397,17 +394,30 @@ void UI::addGroup(json& data,json& defaults){
             }
             it = widgets.size()-1;
         }
+
+        if(data.at("orientation") == "horizontal"){
+            size.y += 2*(float)data.at("padding");
+        }
+        else{
+            size.x += 2*(float)data.at("padding");
+        }
     }
     else{
         for(auto& element:data.at("widgets")){
             if(element.at("type") == "Button"){
                 widgets.emplace_back(std::make_unique<ButtonWidget>(parseButtonData(element,defaults)));
+                it++;
+                widgets[it]->setPosition(widgets[it]->getPosition() + getVec2(data["pos"]));
             }
             else if(element.at("type") == "Slider"){
                 widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
+                it++;
+                widgets[it]->setPosition(widgets[it]->getPosition() + getVec2(data["pos"]));
             }
             else if (element.at("type") == "Group"){
+                element["pos"] = {(float)(element.at("pos")[0]) + (float)(data.at("pos")[0]),(float)(element.at("pos")[1]) + (float)(data.at("pos")[1])};
                 addGroup(element,defaults);
+                it++;
             }
 
             Vec2 element_size;
@@ -419,26 +429,23 @@ void UI::addGroup(json& data,json& defaults){
                 element_size = measure(label_ptr->text,label_ptr->font_id,label_ptr->size).size;
             }
 
-            if(data.at("orientation") == "horizontal"){
-                size.x += element_size.x + (float)data.at("padding");
-                size.y = std::max(size.y,element_size.y);
-            }
-            else{
-                size.y += element_size.y + (float)data.at("padding");
-                size.x = std::max(size.x,element_size.x);
-            }
+            Vec2 widget_pos = widgets[it]->getPosition();
+
+            float right = widget_pos.x + element_size.x;
+            float bottom = widget_pos.y + element_size.y;
+            Vec2 group_pos = getVec2(data["pos"]);
+
+            size.x = std::max(size.x,right - group_pos.x);
+            size.y = std::max(size.y,bottom - group_pos.y);
+
+            it = widgets.size()-1;
+
         }
-    }
-    
-    // we increase the size of the group rectangle but then in the nested group we don't account for the padding of the parent group, so we need to add that here
-    if(data.at("orientation") == "horizontal"){
-        size.y += 2*(float)data.at("padding");
-    }
-    else{
-        size.x += 2*(float)data.at("padding");
+
+        size = size +  Vec2{data.at("padding"),data.at("padding")};
     }
     Color bg_color = data.contains("bg_color") ? getColor(data.at("bg_color")) : getColor(defaults.at("bg_color"));
-    Color hover_color = data.contains("bg_hover_color") ? getColor(data.at("bg_hover_color")) : getColor(defaults.at("hover_color"));
+    Color hover_color = data.contains("hover_color") ? getColor(data.at("hover_color")) : getColor(defaults.at("hover_color"));
     widgets[group_widget_index] = std::make_unique<RectWidget>(Vec2{data.at("pos")[0],data.at("pos")[1]},size,bg_color,hover_color);
 }
 

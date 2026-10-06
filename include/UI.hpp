@@ -14,7 +14,7 @@ struct Vec2{
     float x,y;
 };
 
-float magnitude(const Vec2& v1,const Vec2& v2);
+float distance(const Vec2& v1,const Vec2& v2);
 
 struct Color{
     std::uint8_t r,g,b;
@@ -62,7 +62,7 @@ struct Mouse{
     Vec2 mouse_pos = {INFINITY,INFINITY};
     std::unordered_map<MouseButtonType,MouseButton> buttons;
     Vec2 drag;
-    float drag_threshold = 3;
+    float drag_threshold = 1;
 
     Mouse();
     void update(const std::array<float,2>& pos);
