@@ -80,50 +80,62 @@ enum WidgetType{
     Slider
 };
 
-struct Widget{
-    WidgetType type;
-    virtual void update(Mouse& mouse) = 0;
-    virtual void draw(std::vector<Element>& buffer) = 0;
-    virtual void setPosition(const Vec2& new_pos) = 0;
-    virtual Vec2 getPosition() = 0;
-    virtual void setSize(const Vec2& new_size) = 0;
-    virtual Vec2 getSize() = 0;
+class Widget{
+    public:
+        WidgetType type;
+
+        virtual ~Widget() = default;
+        virtual void update(Mouse& mouse) = 0;
+        virtual void draw(std::vector<Element>& buffer) = 0;
+        virtual void setPosition(const Vec2& new_pos) = 0;
+        virtual Vec2 getPosition() = 0;
+        virtual void setSize(const Vec2& new_size) = 0;
+        virtual Vec2 getSize() = 0;
 };
 
-struct RectWidget:Widget{
+struct RectParam{
+    Vec2 pos;
+    Vec2 size;
+    Color base_color;
+    Color hover_color;
+};
+
+class RectWidget:public Widget{
     Vec2 pos;
     Vec2 size;
     Color base_color;
     Color hover_color;
     Color active_color;
 
-    RectWidget(const Vec2& Apos,const Vec2& Asize,const Color& Abase_color,const Color& Ahover_color);
-    void update(Mouse& mouse);
-    void draw(std::vector<Element>& buffer);
-    void setPosition(const Vec2& new_pos);
-    Vec2 getPosition();
-    void setSize(const Vec2& new_size);
-    Vec2 getSize();
+    public:
+        RectWidget(const RectParam& data);
+        void update(Mouse& mouse);
+        void draw(std::vector<Element>& buffer);
+        void setPosition(const Vec2& new_pos);
+        Vec2 getPosition();
+        void setSize(const Vec2& new_size);
+        Vec2 getSize();
 };
 
-struct LabelWidget:Widget{
+class LabelWidget:public Widget{
     std::string text;
     Vec2 pos;
+    // Vec2 size;
     Color color;
     float size;
     int font_id;
 
-    LabelWidget(const std::string& Atext,float Asize,const Vec2& Apos,const Color& Acolor,int Afont_id);
-    void update(Mouse& mouse);
-    void draw(std::vector<Element>& buffer);
-    void setPosition(const Vec2& new_pos);
-    Vec2 getPosition();
-    void setSize(const Vec2& new_size);
-    Vec2 getSize();
+    public:
+        LabelWidget(const std::string& Atext,float Asize,const Vec2& Apos,const Color& Acolor,int Afont_id);
+        void update(Mouse& mouse);
+        void draw(std::vector<Element>& buffer);
+        void setPosition(const Vec2& new_pos);
+        Vec2 getPosition();
+        void setSize(const Vec2& new_size);
+        Vec2 getSize();
 };
 
 struct ButtonParam{
-    WidgetType type;
     std::string text;
     Vec2 pos;
     Vec2 pos_offset;
@@ -136,8 +148,7 @@ struct ButtonParam{
     float padding;
 };
 
-struct ButtonWidget:Widget{
-    std::string text;
+class ButtonWidget:public Widget{
     Vec2 pos;
     Vec2 pos_offset; // offset required to align the text and the rectangle (don't ask why)
     Vec2 size;
@@ -149,15 +160,17 @@ struct ButtonWidget:Widget{
     float text_size;
     float padding;
 
-    ButtonWidget(const ButtonParam& data);
-    
-    bool isHovering(const Vec2& mouse_pos);
-    void update(Mouse& mouse);
-    void draw(std::vector<Element>& buffer);
-    void setPosition(const Vec2& new_pos);
-    Vec2 getPosition();
-    void setSize(const Vec2& new_size);
-    Vec2 getSize();
+
+    public:
+        std::string text;
+        ButtonWidget(const ButtonParam& data);
+        bool isHovering(const Vec2& mouse_pos);
+        void update(Mouse& mouse);
+        void draw(std::vector<Element>& buffer);
+        void setPosition(const Vec2& new_pos);
+        Vec2 getPosition();
+        void setSize(const Vec2& new_size);
+        Vec2 getSize();
 };
 
 struct SliderParam{
@@ -168,13 +181,12 @@ struct SliderParam{
     Color track_color;
     Color handle_base_color;
     Color handle_hover_color;
-    WidgetType type;
     float value;
     float step;
     bool orientation;
 };
 
-struct SliderWidget:Widget{
+class SliderWidget:public Widget{
     Vec2 range;
     Vec2 track_pos;
     Vec2 handle_pos;
@@ -190,14 +202,35 @@ struct SliderWidget:Widget{
     bool orientation;
     bool selected;
 
-    SliderWidget(const SliderParam& data);
-    bool isHovering(const Vec2& mouse_pos);
-    void update(Mouse& mouse);
-    void draw(std::vector<Element>& buffer);
-    void setPosition(const Vec2& new_pos);
-    Vec2 getPosition();
-    void setSize(const Vec2& new_size);
-    Vec2 getSize();
+    public:
+        SliderWidget(const SliderParam& data);
+        bool isHovering(const Vec2& mouse_pos);
+        void update(Mouse& mouse);
+        void draw(std::vector<Element>& buffer);
+        void setPosition(const Vec2& new_pos);
+        Vec2 getPosition();
+        void setSize(const Vec2& new_size);
+        Vec2 getSize();
+};
+
+struct GroupParam{
+    Vec2 pos;
+    Vec2 size;
+    Color bg_color;
+    Color hover_color;
+};
+
+class GroupWidget:public Widget{
+    RectWidget bg;
+    public:
+        std::vector<std::unique_ptr<Widget>> widgets;
+        GroupWidget(const GroupParam& data);
+        void update(Mouse& mouse);
+        void draw(std::vector<Element>& buffer);
+        void setPosition(const Vec2& new_pos);
+        Vec2 getPosition();
+        void setSize(const Vec2& new_size);
+        Vec2 getSize();
 };
 
 class UI{
@@ -213,5 +246,5 @@ private:
     TextMeasurer measure;
     ButtonParam parseButtonData(json& data,json& defaults);
     SliderParam parseSliderData(json& data,json& defaults);
-    void addGroup(json& data,json& defaults);
+    void addGroup(json& data,json& defaults,std::vector<std::unique_ptr<Widget>>& parent_widgets);
 };

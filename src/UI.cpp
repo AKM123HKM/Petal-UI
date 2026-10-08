@@ -32,11 +32,11 @@ std::ostream& operator<<(std::ostream& os,WidgetType type){
     return os;
 }
 
-Color getColor(json& data){
+Color getColor(const json& data){
     return Color{data[0],data[1],data[2]};
 }
 
-Vec2 getVec2(json& data){
+Vec2 getVec2(const json& data){
     return Vec2{data[0],data[1]};
 }
 
@@ -62,11 +62,11 @@ TextElement::TextElement(const std::string& Atext,float Asize,const Vec2& Apos,c
 
 #pragma region RectWidget
 
-RectWidget::RectWidget(const Vec2& Apos,const Vec2& Asize,const Color& Abase_color,const Color& Ahover_color):
-                       pos(Apos),
-                       size(Asize),
-                       base_color(Abase_color),
-                       hover_color(Ahover_color){
+RectWidget::RectWidget(const RectParam& data){
+    pos = data.pos;
+    size = data.size;
+    base_color = data.base_color;
+    hover_color = data.hover_color;
     active_color = base_color;
     type = WidgetType::Rectangle;
 }
@@ -140,7 +140,7 @@ Vec2 LabelWidget::getSize(){
 
 #pragma region ButtonWidget
 ButtonWidget::ButtonWidget(const ButtonParam& data){
-    type = data.type;
+    type = WidgetType::Button;
     pos = data.pos;
     pos_offset = data.pos_offset;
     size = data.size;
@@ -200,7 +200,7 @@ Vec2 ButtonWidget::getSize(){
 
 #pragma region SliderWidget
 SliderWidget::SliderWidget(const SliderParam& data){
-    type = data.type;
+    type = WidgetType::Slider;
     track_pos = data.track_pos;
     track_size = data.track_size;
     handle_size = data.handle_size;
@@ -285,6 +285,42 @@ Vec2 SliderWidget::getSize(){
 
 #pragma endregion
 
+#pragma region Group
+
+GroupWidget::GroupWidget(const GroupParam& data): bg(RectParam{data.pos,data.size,data.bg_color,data.hover_color}){
+}
+
+void GroupWidget::update(Mouse& mouse){
+    for(auto& widget:widgets){
+        widget->update(mouse);
+    }
+}
+
+void GroupWidget::draw(std::vector<Element>& buffer){
+    bg.draw(buffer);
+    for(auto& widget: widgets){
+        widget->draw(buffer);
+    }
+}
+
+void GroupWidget::setPosition(const Vec2& new_pos){
+    bg.setPosition(new_pos);
+}
+
+Vec2 GroupWidget::getPosition(){
+    return bg.getPosition();
+}
+
+void GroupWidget::setSize(const Vec2& new_size){
+    bg.setSize(new_size);
+}
+
+Vec2 GroupWidget::getSize(){
+    return bg.getSize();
+}
+
+#pragma endregion
+
 #pragma region Mouse
 Mouse::Mouse(){
     buttons = {
@@ -344,44 +380,34 @@ UI::UI(json& data,TextMeasurer m){
             widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,data["defaults"])));
         }
         else if(element["type"] == "Group"){
-            addGroup(element,data["defaults"]);
+            addGroup(element,data["defaults"],widgets);
         }
     }
 }
 
-void UI::addGroup(json& data,json& defaults){    
+void UI::addGroup(json& data,json& defaults,std::vector<std::unique_ptr<Widget>>& parent_widgets){
+    auto getDataWithFallback = [&](const std::string& key) {
+    return data.contains(key) ? data.at(key) : defaults.at(key);
+    };
+    GroupWidget group(GroupParam{getVec2(data.at("pos")),Vec2{0,0},getColor(getDataWithFallback("bg_color")),getColor(getDataWithFallback("hover_color"))});
     Vec2 size = Vec2{data.at("padding"),data.at("padding")};
-    int group_widget_index = widgets.size();
-    widgets.emplace_back(std::make_unique<RectWidget>(Vec2{0,0},Vec2{0,0},Color{0,0,0},Color{0,0,0}));
-    int it = widgets.size()-1;
-    if(data.at("positioning") == "automatic"){
+    if (getDataWithFallback("positioning") == "automatic"){
         Vec2 element_pos = Vec2{data.at("pos")[0],data.at("pos")[1]} + Vec2{data.at("padding"),data.at("padding")};
         for(auto& element:data.at("widgets")){
             if(element.at("type") == "Button"){
-                widgets.emplace_back(std::make_unique<ButtonWidget>(parseButtonData(element,defaults)));
-                it++;
-                widgets[it]->setPosition(element_pos);
+                group.widgets.emplace_back(std::make_unique<ButtonWidget>(parseButtonData(element,defaults)));
+                group.widgets.back()->setPosition(element_pos);
             }
             else if(element.at("type") == "Slider"){
-                widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
-                it++;
-                widgets[it]->setPosition(element_pos);
+                group.widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
+                group.widgets.back()->setPosition(element_pos);
             }
             else if (element.at("type") == "Group"){
                 element["pos"]  = {element_pos.x,element_pos.y};
-                addGroup(element,defaults);
-                it++;
+                addGroup(element,defaults,group.widgets);
             }
 
-            Vec2 element_size;
-            if(!(widgets[it]->type == WidgetType::Label)){
-                element_size = widgets[it]->getSize();
-            }
-            else{
-                auto label_ptr = static_cast<LabelWidget*>(widgets[it].get());
-                element_size = measure(label_ptr->text,label_ptr->font_id,label_ptr->size).size;
-            }
-
+            Vec2 element_size = group.widgets.back()->getSize();
             if(data.at("orientation") == "horizontal"){
                 element_pos.x += element_size.x + (float)data.at("padding");
                 size.x += element_size.x + (float)data.at("padding");
@@ -392,7 +418,6 @@ void UI::addGroup(json& data,json& defaults){
                 size.y += element_size.y + (float)data.at("padding");
                 size.x = std::max(size.x,element_size.x);
             }
-            it = widgets.size()-1;
         }
 
         if(data.at("orientation") == "horizontal"){
@@ -405,31 +430,21 @@ void UI::addGroup(json& data,json& defaults){
     else{
         for(auto& element:data.at("widgets")){
             if(element.at("type") == "Button"){
-                widgets.emplace_back(std::make_unique<ButtonWidget>(parseButtonData(element,defaults)));
-                it++;
-                widgets[it]->setPosition(widgets[it]->getPosition() + getVec2(data["pos"]));
+                group.widgets.emplace_back(std::make_unique<ButtonWidget>(parseButtonData(element,defaults)));
+                group.widgets.back()->setPosition(group.widgets.back()->getPosition() + getVec2(data["pos"]));
             }
             else if(element.at("type") == "Slider"){
-                widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
-                it++;
-                widgets[it]->setPosition(widgets[it]->getPosition() + getVec2(data["pos"]));
+                group.widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
+                group.widgets.back()->setPosition(group.widgets.back()->getPosition() + getVec2(data["pos"]));
             }
             else if (element.at("type") == "Group"){
                 element["pos"] = {(float)(element.at("pos")[0]) + (float)(data.at("pos")[0]),(float)(element.at("pos")[1]) + (float)(data.at("pos")[1])};
-                addGroup(element,defaults);
-                it++;
+                addGroup(element,defaults,group.widgets);
             }
 
-            Vec2 element_size;
-            if(!(widgets[it]->type == WidgetType::Label)){
-                element_size = widgets[it]->getSize();
-            }
-            else{
-                auto label_ptr = static_cast<LabelWidget*>(widgets[it].get());
-                element_size = measure(label_ptr->text,label_ptr->font_id,label_ptr->size).size;
-            }
+            Vec2 element_size = group.widgets.back()->getSize();
 
-            Vec2 widget_pos = widgets[it]->getPosition();
+            Vec2 widget_pos = group.widgets.back()->getPosition();
 
             float right = widget_pos.x + element_size.x;
             float bottom = widget_pos.y + element_size.y;
@@ -437,16 +452,14 @@ void UI::addGroup(json& data,json& defaults){
 
             size.x = std::max(size.x,right - group_pos.x);
             size.y = std::max(size.y,bottom - group_pos.y);
-
-            it = widgets.size()-1;
-
         }
-
         size = size +  Vec2{data.at("padding"),data.at("padding")};
     }
-    Color bg_color = data.contains("bg_color") ? getColor(data.at("bg_color")) : getColor(defaults.at("bg_color"));
-    Color hover_color = data.contains("hover_color") ? getColor(data.at("hover_color")) : getColor(defaults.at("hover_color"));
-    widgets[group_widget_index] = std::make_unique<RectWidget>(Vec2{data.at("pos")[0],data.at("pos")[1]},size,bg_color,hover_color);
+
+    Color bg_color = getColor(getDataWithFallback("bg_color"));
+    Color hover_color = getColor(getDataWithFallback("hover_color"));
+    group.setSize(size);
+    parent_widgets.emplace_back(std::make_unique<GroupWidget>(std::move(group)));
 }
 
 void UI::update(){
@@ -458,40 +471,49 @@ void UI::update(){
 }
 
 ButtonParam UI::parseButtonData(json& data,json& defaults){
+    auto getDataWithFallback = [&](const std::string& key) {
+    return data.contains(key) ? data.at(key) : defaults.at(key);
+    };
+
     ButtonParam param;
-    param.text_color = data.contains("text_color") ? getColor(data.at("text_color")) : getColor(defaults.at("text_color"));
-    param.text_size = data.contains("text_size") ? data.at("text_size") : defaults.at("text_size");
-    param.font_id = data.contains("font_id") ? data.at("font_id") : defaults.at("font_id");
+    param.text_color = getColor(getDataWithFallback("text_color"));
+    param.text_size = getDataWithFallback("text_size");
+    param.font_id = getDataWithFallback("font_id");
     param.text = data.at("text");
     BoundingBox bb = measure(param.text,param.font_id,param.text_size);
-    param.type = WidgetType::Button;
     param.pos = getVec2(data.at("pos"));
-    param.padding = data.contains("padding") ? data.at("padding") : defaults.at("padding");
+    param.padding = getDataWithFallback("padding");
     param.size = Vec2{bb.size.x + param.padding,bb.size.y + param.padding};
     param.pos_offset = bb.pos;
-    param.bg_color = data.contains("bg_color") ? getColor(data.at("bg_color")) : getColor(defaults.at("bg_color"));
-    param.hover_color = data.contains("hover_color") ? getColor(data.at("hover_color")) : getColor(defaults.at("hover_color"));
+    param.bg_color = getColor(getDataWithFallback("bg_color"));
+    param.hover_color = getColor(getDataWithFallback("hover_color"));
 
     return param;
 };
 
 SliderParam UI::parseSliderData(json& data,json& defaults){
+    auto getDataWithFallback = [&](const std::string& key) {
+    return data.contains(key) ? data.at(key) : defaults.at(key);
+    };
+
     SliderParam param;
-    param.type = WidgetType::Slider;
     param.track_pos = getVec2(data.at("pos"));
+
     if(data.at("orientation") == "horizontal"){
         param.orientation = true;
     }
     else{
         param.orientation = false;
     }
-    param.track_size = data.contains("track_size") ? getVec2(data.at("track_size")) : getVec2(defaults.at("track_size"));
-    param.handle_size = data.contains("handle_size") ? getVec2(data.at("handle_size")) : getVec2(defaults.at("handle_size"));
-    param.range = data.contains("range") ? getVec2(data.at("range")) : getVec2(defaults.at("range"));
-    param.value = data.contains("value") ? data.at("value") : defaults.at("value");
-    param.step = data.contains("step") ? data.at("step") : defaults.at("step");
-    param.track_color = data.contains("track_color") ? getColor(data.at("track_color")) : getColor(defaults.at("track_color"));
-    param.handle_base_color = data.contains("handle_base_color") ? getColor(data.at("handle_base_color")) : getColor(defaults.at("handle_base_color"));
-    param.handle_hover_color = data.contains("handle_hover_color") ? getColor(data.at("handle_hover_color")) : getColor(defaults.at("handle_hover_color"));
+
+    param.track_size = getVec2(getDataWithFallback("track_size"));
+    param.handle_size = getVec2(getDataWithFallback("handle_size"));
+    param.range = getVec2(getDataWithFallback("range"));
+    param.value = getDataWithFallback("value");
+    param.step = getDataWithFallback("step");
+    param.track_color = getColor(getDataWithFallback("track_color"));
+    param.handle_base_color = getColor(getDataWithFallback("handle_base_color"));
+    param.handle_hover_color = getColor(getDataWithFallback("handle_hover_color"));
+
     return param;
 }

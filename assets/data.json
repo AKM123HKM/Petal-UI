@@ -173,6 +173,8 @@
         "value": 0,
         "range": [0, 100],
         "track_size": [300, 20],
-        "handle_size": [30, 20]
+        "handle_size": [30, 20],
+        "positioning":"automatic",
+        "orientation":"vertical"
     }
 }
