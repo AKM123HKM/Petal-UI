@@ -117,16 +117,29 @@ class RectWidget:public Widget{
         Vec2 getSize();
 };
 
+struct LabelParam{
+    std::string text;
+    Vec2 pos;
+    Vec2 size;
+    Color base_color;
+    Color hover_color;
+    float text_size;
+    int font_id;
+};
+
 class LabelWidget:public Widget{
     std::string text;
     Vec2 pos;
-    // Vec2 size;
-    Color color;
-    float size;
+    Vec2 size;
+    Color base_color;
+    Color hover_color;
+    Color active_color;
+    float text_size;
     int font_id;
+    TextMeasurer measurer;
 
     public:
-        LabelWidget(const std::string& Atext,float Asize,const Vec2& Apos,const Color& Acolor,int Afont_id);
+        LabelWidget(const LabelParam& data, TextMeasurer& Ameasurer);
         void update(Mouse& mouse);
         void draw(std::vector<Element>& buffer);
         void setPosition(const Vec2& new_pos);
@@ -244,6 +257,8 @@ public:
 
 private:
     TextMeasurer measure;
+    RectParam parseRectData(json& data,json& defaults);
+    LabelParam parseLabelData(json& data,json& defaults);
     ButtonParam parseButtonData(json& data,json& defaults);
     SliderParam parseSliderData(json& data,json& defaults);
     void addGroup(json& data,json& defaults,std::vector<std::unique_ptr<Widget>>& parent_widgets);

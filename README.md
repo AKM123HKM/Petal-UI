@@ -5,5 +5,4 @@ I am trying to make a library of sort where I define the UI hierarchy using json
 
 As of now, i have implemented just buttons and sliders and nested groups of these elements.
 
-#SHOWCASE IMAGE
-<img width="798" height="828" alt="showcase" src="https://github.com/user-attachments/assets/1453b861-04f9-40ac-a319-c45c3135d226" />
+![Project Showcase](assets/showcase.gif)

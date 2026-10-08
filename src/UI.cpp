@@ -103,21 +103,30 @@ Vec2 RectWidget::getSize(){
 #pragma endregion
 
 #pragma region LabelWidget
-LabelWidget::LabelWidget(const std::string& Atext,float Asize,const Vec2& Apos,const Color& Acolor,int Afont_id):
-                         text(Atext),
-                         size(Asize),
-                         pos(Apos),
-                         color(Acolor),
-                         font_id(Afont_id){
+LabelWidget::LabelWidget(const LabelParam& data,TextMeasurer& Ameasurer){
+    text = data.text;
+    pos = data.pos;
+    text_size = data.text_size;
+    base_color = data.base_color;
+    hover_color = data.hover_color;
+    active_color = base_color;
+    font_id = data.font_id;
     type = WidgetType::Label;
+    measurer = Ameasurer;
+    size = measurer(text,font_id,text_size).size;
 }
 
 void LabelWidget::update(Mouse& mouse){
-    // No update logic for label widget
+    if(rectPointCollision(pos,size,mouse.mouse_pos)){
+        active_color = hover_color;
+    }
+    else{
+        active_color = base_color;
+    }
 }
 
 void LabelWidget::draw(std::vector<Element>& buffer){
-    buffer.emplace_back(std::in_place_type<TextElement>,text,size,pos,color);
+    buffer.emplace_back(std::in_place_type<TextElement>,text,text_size,pos,active_color);
 }
 
 void LabelWidget::setPosition(const Vec2& new_pos){
@@ -129,11 +138,11 @@ Vec2 LabelWidget::getPosition(){
 }
 
 void LabelWidget::setSize(const Vec2& new_size){
-    // Labels don't have a size in this context
+    size = new_size;
 }
 
 Vec2 LabelWidget::getSize(){
-    return Vec2{0,0}; // Labels don't have a size in this context
+    return size;
 }
 
 #pragma endregion
@@ -372,17 +381,7 @@ bool Mouse::isDragging(MouseButtonType type){
 
 UI::UI(json& data,TextMeasurer m){
     measure = m;
-    for(auto& element: data["ui"]){
-        if(element["type"] == "Button"){
-            widgets.emplace_back(std::make_unique<ButtonWidget>(parseButtonData(element,data["defaults"])));
-        }
-        else if(element["type"] == "Slider"){
-            widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,data["defaults"])));
-        }
-        else if(element["type"] == "Group"){
-            addGroup(element,data["defaults"],widgets);
-        }
-    }
+    addGroup(data["ui"],data["defaults"],widgets);
 }
 
 void UI::addGroup(json& data,json& defaults,std::vector<std::unique_ptr<Widget>>& parent_widgets){
@@ -402,9 +401,18 @@ void UI::addGroup(json& data,json& defaults,std::vector<std::unique_ptr<Widget>>
                 group.widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
                 group.widgets.back()->setPosition(element_pos);
             }
+            else if(element.at("type") == "Rect"){
+                group.widgets.emplace_back(std::make_unique<RectWidget>(parseRectData(element,defaults)));
+                group.widgets.back()->setPosition(element_pos);
+            }
+            else if(element.at("type") == "Label"){
+                group.widgets.emplace_back(std::make_unique<LabelWidget>(parseLabelData(element,defaults),measure));
+                group.widgets.back()->setPosition(element_pos);
+            }
             else if (element.at("type") == "Group"){
-                element["pos"]  = {element_pos.x,element_pos.y};
-                addGroup(element,defaults,group.widgets);
+                auto temp_data = element;
+                temp_data["pos"]  = {element_pos.x,element_pos.y};
+                addGroup(temp_data,defaults,group.widgets);
             }
 
             Vec2 element_size = group.widgets.back()->getSize();
@@ -437,9 +445,18 @@ void UI::addGroup(json& data,json& defaults,std::vector<std::unique_ptr<Widget>>
                 group.widgets.emplace_back(std::make_unique<SliderWidget>(parseSliderData(element,defaults)));
                 group.widgets.back()->setPosition(group.widgets.back()->getPosition() + getVec2(data["pos"]));
             }
+            else if(element.at("type") == "Rect"){
+                group.widgets.emplace_back(std::make_unique<RectWidget>(parseRectData(element,defaults)));
+                group.widgets.back()->setPosition(group.widgets.back()->getPosition() + getVec2(data["pos"]));
+            }
+            else if(element.at("type") == "Label"){
+                group.widgets.emplace_back(std::make_unique<LabelWidget>(parseLabelData(element,defaults),measure));
+                group.widgets.back()->setPosition(group.widgets.back()->getPosition() + getVec2(data["pos"]));
+            }
             else if (element.at("type") == "Group"){
-                element["pos"] = {(float)(element.at("pos")[0]) + (float)(data.at("pos")[0]),(float)(element.at("pos")[1]) + (float)(data.at("pos")[1])};
-                addGroup(element,defaults,group.widgets);
+                auto temp_data = element;
+                temp_data["pos"] = {(float)(element.at("pos")[0]) + (float)(data.at("pos")[0]),(float)(element.at("pos")[1]) + (float)(data.at("pos")[1])};
+                addGroup(temp_data,defaults,group.widgets);
             }
 
             Vec2 element_size = group.widgets.back()->getSize();
@@ -468,6 +485,36 @@ void UI::update(){
         widget->update(mouse);
         widget->draw(frame_render_buffer);
     }
+}
+
+RectParam UI::parseRectData(json& data,json& defaults){
+    auto getDataWithFallback = [&](const std::string& key) {
+    return data.contains(key) ? data.at(key) : defaults.at(key);
+    };
+
+    RectParam param;
+    param.pos = getVec2(data.at("pos"));
+    param.size = getVec2(data.at("size"));
+    param.base_color = getColor(getDataWithFallback("bg_color"));
+    param.hover_color = getColor(getDataWithFallback("hover_color"));
+
+    return param;
+}
+
+LabelParam UI::parseLabelData(json& data, json& defaults){
+    auto getDataWithFallback = [&](const std::string& key) {
+    return data.contains(key) ? data.at(key) : defaults.at(key);
+    };
+
+    LabelParam param;
+    param.text = data.at("text");
+    param.pos = getVec2(data.at("pos"));
+    param.font_id = getDataWithFallback("font_id");
+    param.text_size = getDataWithFallback("text_size");
+    param.base_color = getColor(getDataWithFallback("bg_color"));
+    param.hover_color = getColor(getDataWithFallback("hover_color"));
+
+    return param;
 }
 
 ButtonParam UI::parseButtonData(json& data,json& defaults){

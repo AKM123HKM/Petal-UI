@@ -1,167 +1,239 @@
 {
-    "ui": [
-        {
-            "type": "Group",
-            "bg_color": [210, 210, 210],
-            "pos": [40, 40],
-            "padding": 16,
-            "positioning": "automatic",
-            "orientation": "vertical",
-            "widgets": [
+    "ui":{
+        "type": "Group",
+        "bg_color": [210, 210, 210],
+        "pos": [40, 40],
+        "padding": 16,
+        "positioning": "automatic",
+        "orientation": "vertical",
+        "widgets": [
 
-                {
-                    "type": "Button",
-                    "pos": [0, 0],
-                    "text": "Top Button"
-                },
+            {
+                "type": "Label",
+                "pos": [0, 0],
+                "text": "UI Layout Demo",
+                "font_id": 0,
+                "text_size": 26
+            },
 
-                {
-                    "type": "Group",
-                    "bg_color": [180, 100, 100],
-                    "hover_color": [170, 90, 90],
-                    "pos": [20, 10],
-                    "padding": 16,
-                    "positioning": "absolute",
-                    "orientation": "horizontal",
-                    "widgets": [
-                        { "type": "Button", "pos": [20, 20],  "text": "Absolute A" },
-                        { "type": "Button", "pos": [250, 20], "text": "Absolute B" },
-                        {
-                            "type": "Slider",
-                            "pos": [480, 32],
-                            "track_size": [150, 20],
-                            "handle_size": [20, 30],
-                            "orientation": "horizontal"
-                        }
-                    ]
-                },
+            {
+                "type": "Group",
+                "bg_color": [180, 100, 100],
+                "hover_color": [170, 90, 90],
+                "pos": [0, 0],
+                "padding": 14,
+                "positioning": "absolute",
+                "orientation": "horizontal",
+                "widgets": [
+                    {
+                        "type": "Label",
+                        "pos": [20, 12],
+                        "text": "Main Controls",
+                        "font_id": 0,
+                        "text_size": 18
+                    },
+                    {
+                        "type": "Button",
+                        "pos": [20, 50],
+                        "text": "Play"
+                    },
+                    {
+                        "type": "Button",
+                        "pos": [140, 50],
+                        "text": "Reset"
+                    },
+                    {
+                        "type": "Button",
+                        "pos": [260, 50],
+                        "text": "Settings"
+                    },
+                    {
+                        "type": "Slider",
+                        "pos": [430, 58],
+                        "track_size": [150, 20],
+                        "handle_size": [20, 30],
+                        "orientation": "horizontal"
+                    }
+                ]
+            },
 
-                {
-                    "type": "Group",
-                    "bg_color": [100, 180, 100],
-                    "hover_color": [90, 170, 90],
-                    "pos": [0, 0],
-                    "padding": 12,
-                    "positioning": "automatic",
-                    "orientation": "horizontal",
-                    "widgets": [
-                        { "type": "Button", "pos": [0, 0], "text": "Auto A" },
+            {
+                "type": "Group",
+                "bg_color": [100, 180, 110],
+                "hover_color": [90, 170, 100],
+                "pos": [0, 0],
+                "padding": 14,
+                "positioning": "automatic",
+                "orientation": "horizontal",
+                "widgets": [
 
-                        {
-                            "type": "Group",
-                            "bg_color": [80, 150, 100],
-                            "hover_color": [70, 140, 90],
-                            "pos": [0, 0],
-                            "padding": 12,
-                            "positioning": "absolute",
-                            "orientation": "vertical",
-                            "widgets": [
-                                { "type": "Button", "pos": [20, 20], "text": "Nested Abs 1" },
-                                { "type": "Button", "pos": [20, 90], "text": "Nested Abs 2" },
-                                {
-                                    "type": "Slider",
-                                    "pos": [290, 30],
-                                    "track_size": [20, 130],
-                                    "handle_size": [30, 20],
-                                    "orientation": "vertical"
-                                }
-                            ]
-                        },
+                    {
+                        "type": "Group",
+                        "bg_color": [80, 150, 110],
+                        "hover_color": [70, 140, 100],
+                        "pos": [0, 0],
+                        "padding": 12,
+                        "positioning": "automatic",
+                        "orientation": "vertical",
+                        "widgets": [
+                            {
+                                "type": "Label",
+                                "pos": [0, 0],
+                                "text": "Properties",
+                                "font_id": 0,
+                                "text_size": 18
+                            },
+                            {
+                                "type": "Button",
+                                "pos": [0, 0],
+                                "text": "Object"
+                            },
+                            {
+                                "type": "Button",
+                                "pos": [0, 0],
+                                "text": "Transform"
+                            },
+                            {
+                                "type": "Button",
+                                "pos": [0, 0],
+                                "text": "Material"
+                            }
+                        ]
+                    },
 
-                        { "type": "Button", "pos": [0, 0], "text": "Auto B" }
-                    ]
-                },
+                    {
+                        "type": "Group",
+                        "bg_color": [110, 100, 170],
+                        "hover_color": [100, 90, 160],
+                        "pos": [0, 0],
+                        "padding": 12,
+                        "positioning": "absolute",
+                        "orientation": "vertical",
+                        "widgets": [
+                            {
+                                "type": "Label",
+                                "pos": [20, 12],
+                                "text": "Preview",
+                                "font_id": 0,
+                                "text_size": 18
+                            },
+                            {
+                                "type": "Rect",
+                                "pos": [20, 50],
+                                "size": [260, 130],
+                                "bg_color": [80, 75, 140],
+                                "hover_color": [70, 65, 130]
+                            },
+                            {
+                                "type": "Slider",
+                                "pos": [310, 55],
+                                "track_size": [20, 120],
+                                "handle_size": [30, 20],
+                                "orientation": "vertical"
+                            },
+                            {
+                                "type": "Button",
+                                "pos": [360, 100],
+                                "text": "Apply"
+                            }
+                        ]
+                    }
+                ]
+            },
 
-                {
-                    "type": "Group",
-                    "bg_color": [100, 100, 180],
-                    "hover_color": [90, 90, 170],
-                    "pos": [0, 0],
-                    "padding": 16,
-                    "positioning": "absolute",
-                    "orientation": "horizontal",
-                    "widgets": [
+            {
+                "type": "Group",
+                "bg_color": [100, 130, 180],
+                "hover_color": [90, 120, 170],
+                "pos": [0, 0],
+                "padding": 14,
+                "positioning": "absolute",
+                "orientation": "horizontal",
+                "widgets": [
 
-                        {
-                            "type": "Group",
-                            "bg_color": [80, 80, 160],
-                            "hover_color": [70, 70, 150],
-                            "pos": [20, 20],
-                            "padding": 8,
-                            "positioning": "automatic",
-                            "orientation": "vertical",
-                            "widgets": [
-                                { "type": "Button", "pos": [0, 0], "text": "Auto Nested 1" },
-                                { "type": "Button", "pos": [0, 0], "text": "Auto Nested 2" }
-                            ]
-                        },
+                    {
+                        "type": "Label",
+                        "pos": [20, 12],
+                        "text": "Tools",
+                        "font_id": 0,
+                        "text_size": 18
+                    },
 
-                        {
-                            "type": "Group",
-                            "bg_color": [120, 80, 160],
-                            "hover_color": [110, 70, 150],
-                            "pos": [330, 30],
-                            "padding": 12,
-                            "positioning": "absolute",
-                            "orientation": "vertical",
-                            "widgets": [
-                                {
-                                    "type": "Slider",
-                                    "pos": [20, 20],
-                                    "track_size": [20, 120],
-                                    "handle_size": [30, 20],
-                                    "orientation": "vertical"
-                                },
-                                { "type": "Button", "pos": [80, 70], "text": "Side Button" }
-                            ]
-                        }
-                    ]
-                },
+                    {
+                        "type": "Button",
+                        "pos": [20, 55],
+                        "text": "Select"
+                    },
 
-                {
-                    "type": "Group",
-                    "bg_color": [180, 180, 100],
-                    "hover_color": [170, 170, 90],
-                    "pos": [0, 0],
-                    "padding": 12,
-                    "positioning": "automatic",
-                    "orientation": "horizontal",
-                    "widgets": [
-                        {
-                            "type": "Slider",
-                            "pos": [0, 0],
-                            "track_size": [150, 20],
-                            "handle_size": [20, 30],
-                            "orientation": "horizontal"
-                        },
+                    {
+                        "type": "Button",
+                        "pos": [140, 55],
+                        "text": "Move"
+                    },
 
-                        {
-                            "type": "Group",
-                            "bg_color": [160, 160, 80],
-                            "hover_color": [150, 150, 70],
-                            "pos": [0, 0],
-                            "padding": 8,
-                            "positioning": "absolute",
-                            "orientation": "horizontal",
-                            "widgets": [
-                                { "type": "Button", "pos": [20, 20], "text": "Final Absolute" },
-                                {
-                                    "type": "Slider",
-                                    "pos": [330, 30],
-                                    "track_size": [100, 20],
-                                    "handle_size": [20, 30],
-                                    "orientation": "horizontal"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    ],
-    "defaults": {
+                    {
+                        "type": "Group",
+                        "bg_color": [80, 110, 160],
+                        "hover_color": [70, 100, 150],
+                        "pos": [300, 25],
+                        "padding": 10,
+                        "positioning": "automatic",
+                        "orientation": "vertical",
+                        "widgets": [
+                            {
+                                "type": "Label",
+                                "pos": [0, 0],
+                                "text": "Tool Options",
+                                "font_id": 0,
+                                "text_size": 16
+                            },
+                            {
+                                "type": "Rect",
+                                "pos": [0, 0],
+                                "size": [180, 35],
+                                "bg_color": [70, 90, 140],
+                                "hover_color": [60, 80, 130]
+                            }
+                        ]
+                    }
+                ]
+            },
+
+            {
+                "type": "Group",
+                "bg_color": [180, 180, 100],
+                "hover_color": [170, 170, 90],
+                "pos": [0, 0],
+                "padding": 12,
+                "positioning": "automatic",
+                "orientation": "horizontal",
+                "widgets": [
+                    {
+                        "type": "Label",
+                        "pos": [0, 0],
+                        "text": "Status: Ready",
+                        "font_id": 0,
+                        "text_size": 16
+                    },
+                    {
+                        "type": "Rect",
+                        "pos": [0, 0],
+                        "size": [100, 22],
+                        "bg_color": [100, 160, 100],
+                        "hover_color": [90, 150, 90]
+                    },
+                    {
+                        "type": "Button",
+                        "pos": [0, 0],
+                        "text": "Close"
+                    }
+                ]
+            }
+        ]
+    },
+    "defaults":{
         "font_id": 0,
-        "text_size": 32,
+        "text_size": 20,
         "padding": 8,
         "bg_color": [255, 255, 255],
         "hover_color": [100, 100, 100],

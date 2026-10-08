@@ -23,7 +23,7 @@ void drawText(sf::RenderWindow& window, TextElement* element, sf::Font& font){
 
 int main() {
     #pragma region Initialising window
-    sf::RenderWindow window(sf::VideoMode({800, 800}), "SFML 3 Test");
+    sf::RenderWindow window(sf::VideoMode({800,800}), "SFML 3 Test");
     #pragma endregion
 
     // Clock to track the delta time and dt_update_clock to update the rendered dt after some time instead of every frame
