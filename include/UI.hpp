@@ -1,28 +1,12 @@
 #pragma once
 #include <array>
-#include <vector>
-#include <string>
-#include <cstdint>
-#include <memory>
 #include "json.hpp"
 #include <iostream>
 #include <variant>
+#include "layout.hpp"
+
 
 using json = nlohmann::json;
-
-struct Vec2{
-    float x,y;
-};
-
-float distance(const Vec2& v1,const Vec2& v2);
-
-struct Color{
-    std::uint8_t r,g,b;
-};
-
-struct BoundingBox{
-    Vec2 pos, size;
-};
 
 using TextMeasurer = std::function<BoundingBox(const std::string& text, int font_id, float size)>;
 
@@ -77,20 +61,24 @@ enum WidgetType{
     Rectangle,
     Label,
     Button,
-    Slider
+    Slider,
+    Group
 };
 
 class Widget{
     public:
         WidgetType type;
+        Widget* parent;
+        Vec2 pos;
+        Vec2 size;
 
         virtual ~Widget() = default;
         virtual void update(Mouse& mouse) = 0;
         virtual void draw(std::vector<Element>& buffer) = 0;
-        virtual void setPosition(const Vec2& new_pos) = 0;
-        virtual Vec2 getPosition() = 0;
-        virtual void setSize(const Vec2& new_size) = 0;
-        virtual Vec2 getSize() = 0;
+        virtual void setPosition(const Vec2& new_pos);
+        virtual Vec2 getPosition();
+        virtual void setSize(const Vec2& new_size);
+        virtual Vec2 getSize();
 };
 
 struct RectParam{
@@ -101,8 +89,6 @@ struct RectParam{
 };
 
 class RectWidget:public Widget{
-    Vec2 pos;
-    Vec2 size;
     Color base_color;
     Color hover_color;
     Color active_color;
@@ -111,10 +97,6 @@ class RectWidget:public Widget{
         RectWidget(const RectParam& data);
         void update(Mouse& mouse);
         void draw(std::vector<Element>& buffer);
-        void setPosition(const Vec2& new_pos);
-        Vec2 getPosition();
-        void setSize(const Vec2& new_size);
-        Vec2 getSize();
 };
 
 struct LabelParam{
@@ -129,8 +111,6 @@ struct LabelParam{
 
 class LabelWidget:public Widget{
     std::string text;
-    Vec2 pos;
-    Vec2 size;
     Color base_color;
     Color hover_color;
     Color active_color;
@@ -142,10 +122,6 @@ class LabelWidget:public Widget{
         LabelWidget(const LabelParam& data, TextMeasurer& Ameasurer);
         void update(Mouse& mouse);
         void draw(std::vector<Element>& buffer);
-        void setPosition(const Vec2& new_pos);
-        Vec2 getPosition();
-        void setSize(const Vec2& new_size);
-        Vec2 getSize();
 };
 
 struct ButtonParam{
@@ -162,9 +138,7 @@ struct ButtonParam{
 };
 
 class ButtonWidget:public Widget{
-    Vec2 pos;
     Vec2 pos_offset; // offset required to align the text and the rectangle (don't ask why)
-    Vec2 size;
     Color active_color;
     Color bg_color;
     Color hover_color;
@@ -180,10 +154,6 @@ class ButtonWidget:public Widget{
         bool isHovering(const Vec2& mouse_pos);
         void update(Mouse& mouse);
         void draw(std::vector<Element>& buffer);
-        void setPosition(const Vec2& new_pos);
-        Vec2 getPosition();
-        void setSize(const Vec2& new_size);
-        Vec2 getSize();
 };
 
 struct SliderParam{
@@ -201,9 +171,7 @@ struct SliderParam{
 
 class SliderWidget:public Widget{
     Vec2 range;
-    Vec2 track_pos;
     Vec2 handle_pos;
-    Vec2 track_size;
     Vec2 handle_size;
     Color track_color;
     Color handle_base_color;
@@ -220,10 +188,8 @@ class SliderWidget:public Widget{
         bool isHovering(const Vec2& mouse_pos);
         void update(Mouse& mouse);
         void draw(std::vector<Element>& buffer);
-        void setPosition(const Vec2& new_pos);
-        Vec2 getPosition();
-        void setSize(const Vec2& new_size);
-        Vec2 getSize();
+        void setPosition(const Vec2& new_pos) override;
+        void setSize(const Vec2& new_size) override;
 };
 
 struct GroupParam{
@@ -234,16 +200,14 @@ struct GroupParam{
 };
 
 class GroupWidget:public Widget{
-    RectWidget bg;
+    Color active_color;
+    Color bg_color;
+    Color hover_color;
     public:
         std::vector<std::unique_ptr<Widget>> widgets;
         GroupWidget(const GroupParam& data);
         void update(Mouse& mouse);
         void draw(std::vector<Element>& buffer);
-        void setPosition(const Vec2& new_pos);
-        Vec2 getPosition();
-        void setSize(const Vec2& new_size);
-        Vec2 getSize();
 };
 
 class UI{

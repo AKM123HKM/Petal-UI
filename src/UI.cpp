@@ -1,19 +1,6 @@
 #include "UI.hpp"
 #include <iostream> 
 
-Vec2 operator+(const Vec2& v1, const Vec2& v2){
-    return Vec2{v1.x + v2.x, v1.y + v2.y};
-}
-
-Vec2 operator-(const Vec2& v1,const Vec2& v2){
-    return Vec2{v1.x - v2.x, v1.y - v2.y};
-}
-
-std::ostream& operator<<(std::ostream& os,const Vec2& v){
-    os << "x:" << v.x << ", y:" << v.y;
-    return os;
-}
-
 std::ostream& operator<<(std::ostream& os,WidgetType type){
     switch(type){
         case WidgetType::Rectangle:
@@ -60,6 +47,22 @@ TextElement::TextElement(const std::string& Atext,float Asize,const Vec2& Apos,c
                          pos(Apos),
                          color(Acolor){};
 
+void Widget::setPosition(const Vec2& new_pos){
+    pos = new_pos;
+}
+
+void Widget::setSize(const Vec2& new_size){
+    size = new_size;
+}
+
+Vec2 Widget::getSize(){
+    return size;
+}
+
+Vec2 Widget::getPosition(){
+    return pos;
+}
+
 #pragma region RectWidget
 
 RectWidget::RectWidget(const RectParam& data){
@@ -83,22 +86,6 @@ void RectWidget::update(Mouse& mouse){
 void RectWidget::draw(std::vector<Element>& buffer){
     buffer.emplace_back(std::in_place_type<RectElement>,pos,size,active_color);
 };
-
-void RectWidget::setPosition(const Vec2& new_pos){
-    pos = new_pos;
-}
-
-Vec2 RectWidget::getPosition(){
-    return pos;
-}
-
-void RectWidget::setSize(const Vec2& new_size){
-    size = new_size;
-}
-
-Vec2 RectWidget::getSize(){
-    return size;
-}
 
 #pragma endregion
 
@@ -127,22 +114,6 @@ void LabelWidget::update(Mouse& mouse){
 
 void LabelWidget::draw(std::vector<Element>& buffer){
     buffer.emplace_back(std::in_place_type<TextElement>,text,text_size,pos,active_color);
-}
-
-void LabelWidget::setPosition(const Vec2& new_pos){
-    pos = new_pos;
-}
-
-Vec2 LabelWidget::getPosition(){
-    return pos;
-}
-
-void LabelWidget::setSize(const Vec2& new_size){
-    size = new_size;
-}
-
-Vec2 LabelWidget::getSize(){
-    return size;
 }
 
 #pragma endregion
@@ -189,29 +160,13 @@ void ButtonWidget::draw(std::vector<Element>& buffer){
     buffer.emplace_back(std::in_place_type<TextElement>,text,text_size,(pos - pos_offset) + Vec2{padding/2,padding/2},text_color);
 }
 
-void ButtonWidget::setPosition(const Vec2& new_pos){
-    pos = new_pos;
-}
-
-Vec2 ButtonWidget::getPosition(){
-    return pos;
-}
-
-void ButtonWidget::setSize(const Vec2& new_size){
-    size = new_size;
-}
-
-Vec2 ButtonWidget::getSize(){
-    return size;
-}
-
 #pragma endregion
 
 #pragma region SliderWidget
 SliderWidget::SliderWidget(const SliderParam& data){
     type = WidgetType::Slider;
-    track_pos = data.track_pos;
-    track_size = data.track_size;
+    pos = data.track_pos;
+    size = data.track_size;
     handle_size = data.handle_size;
     range = data.range;
     value = data.value;
@@ -223,10 +178,10 @@ SliderWidget::SliderWidget(const SliderParam& data){
     handle_active_color = data.handle_base_color;
 
     if(orientation){
-        handle_pos = Vec2{track_pos.x + (value-range.x)/(range.y-range.x)*(track_size.x-handle_size.x),track_pos.y - (handle_size.y - track_size.y)/2};
+        handle_pos = Vec2{pos.x + (value-range.x)/(range.y-range.x)*(size.x-handle_size.x),pos.y - (handle_size.y - size.y)/2};
     }
     else{
-        handle_pos = Vec2{track_pos.x - (handle_size.x - track_size.x)/2,track_pos.y + (value-range.x)/(range.y-range.x)*(track_size.y-handle_size.y)};
+        handle_pos = Vec2{pos.x - (handle_size.x - size.x)/2,pos.y + (value-range.x)/(range.y-range.x)*(size.y-handle_size.y)};
     }
 }
 
@@ -249,83 +204,70 @@ void SliderWidget::update(Mouse& mouse){
     }
     if(selected && mouse.isDragging(MouseButtonType::Left)){
         if(orientation){
-            handle_pos.x = std::clamp(handle_pos.x + mouse.drag.x, track_pos.x, track_pos.x + (track_size.x - handle_size.x));
-            value = std::clamp(range.x + (std::round(((handle_pos.x - track_pos.x)/(track_size.x - handle_size.x) * (range.y - range.x))/step) * step), range.x , range.y);
+            handle_pos.x = std::clamp(handle_pos.x + mouse.drag.x, pos.x, pos.x + (size.x - handle_size.x));
+            value = std::clamp(range.x + (std::round(((handle_pos.x - pos.x)/(size.x - handle_size.x) * (range.y - range.x))/step) * step), range.x , range.y);
         }
         else{
-            handle_pos.y = std::clamp(handle_pos.y + mouse.drag.y, track_pos.y, track_pos.y + (track_size.y - handle_size.y));
-            value = std::clamp(range.x + (std::round(((handle_pos.y - track_pos.y)/(track_size.y - handle_size.y) * (range.y - range.x))/step) * step), range.x , range.y);
+            handle_pos.y = std::clamp(handle_pos.y + mouse.drag.y, pos.y, pos.y + (size.y - handle_size.y));
+            value = std::clamp(range.x + (std::round(((handle_pos.y - pos.y)/(size.y - handle_size.y) * (range.y - range.x))/step) * step), range.x , range.y);
         }
     }
 }
 
 void SliderWidget::draw(std::vector<Element>& buffer){
-    buffer.emplace_back(std::in_place_type<RectElement>,track_pos,track_size,track_color);
+    buffer.emplace_back(std::in_place_type<RectElement>,pos,size,track_color);
     buffer.emplace_back(std::in_place_type<RectElement>,handle_pos,handle_size,handle_active_color);
 }
 
 void SliderWidget::setPosition(const Vec2& new_pos){
-    track_pos = new_pos;
+    pos = new_pos;
     if(orientation){
-        handle_pos = Vec2{track_pos.x + (value-range.x)/(range.y-range.x)*(track_size.x-handle_size.x),track_pos.y - (handle_size.y - track_size.y)/2};
+        handle_pos = Vec2{pos.x + (value-range.x)/(range.y-range.x)*(size.x-handle_size.x),pos.y - (handle_size.y - size.y)/2};
     }
     else{
-        handle_pos = Vec2{track_pos.x - (handle_size.x - track_size.x)/2,track_pos.y + (value-range.x)/(range.y-range.x)*(track_size.y-handle_size.y)};
+        handle_pos = Vec2{pos.x - (handle_size.x - size.x)/2,pos.y + (value-range.x)/(range.y-range.x)*(size.y-handle_size.y)};
     }
-}
-
-Vec2 SliderWidget::getPosition(){
-    return track_pos;
 }
 
 void SliderWidget::setSize(const Vec2& new_size){
-    track_size = new_size;
+    size = new_size;
     if(orientation){
-        handle_pos = Vec2{track_pos.x + (value-range.x)/(range.y-range.x)*(track_size.x-handle_size.x),track_pos.y - (handle_size.y - track_size.y)/2};
+        handle_pos = Vec2{pos.x + (value-range.x)/(range.y-range.x)*(size.x-handle_size.x),pos.y - (handle_size.y - size.y)/2};
     }
     else{
-        handle_pos = Vec2{track_pos.x - (handle_size.x - track_size.x)/2,track_pos.y + (value-range.x)/(range.y-range.x)*(track_size.y-handle_size.y)};
+        handle_pos = Vec2{pos.x - (handle_size.x - size.x)/2,pos.y + (value-range.x)/(range.y-range.x)*(size.y-handle_size.y)};
     }
-}
-
-Vec2 SliderWidget::getSize(){
-    return track_size;
 }
 
 #pragma endregion
 
 #pragma region Group
 
-GroupWidget::GroupWidget(const GroupParam& data): bg(RectParam{data.pos,data.size,data.bg_color,data.hover_color}){
+GroupWidget::GroupWidget(const GroupParam& data){
+    pos = data.pos;
+    size = data.size;
+    bg_color = data.bg_color;
+    hover_color = data.hover_color;
+    type = WidgetType::Group;
 }
 
 void GroupWidget::update(Mouse& mouse){
+    if(rectPointCollision(pos,size,mouse.mouse_pos)){
+        active_color = hover_color;
+    }
+    else{
+        active_color = bg_color;
+    }
     for(auto& widget:widgets){
         widget->update(mouse);
     }
 }
 
 void GroupWidget::draw(std::vector<Element>& buffer){
-    bg.draw(buffer);
+    buffer.emplace_back(std::in_place_type<RectElement>,pos,size,active_color);
     for(auto& widget: widgets){
         widget->draw(buffer);
     }
-}
-
-void GroupWidget::setPosition(const Vec2& new_pos){
-    bg.setPosition(new_pos);
-}
-
-Vec2 GroupWidget::getPosition(){
-    return bg.getPosition();
-}
-
-void GroupWidget::setSize(const Vec2& new_size){
-    bg.setSize(new_size);
-}
-
-Vec2 GroupWidget::getSize(){
-    return bg.getSize();
 }
 
 #pragma endregion
