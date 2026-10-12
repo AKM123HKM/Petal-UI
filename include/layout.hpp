@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <array>
 
 struct Vec2{
     float x,y;
@@ -22,18 +23,47 @@ struct BoundingBox{
     Vec2 pos, size;
 };
 
-enum Orientation{
-    Horizontal,
-    Vertical,
+enum OrderDirection{
+    Row,
+    Col,
+};
+
+enum SizingMode{
+    Fill,
+    Fixed,
+    Fit
+};
+
+struct Edge{
+    float value;
+    SizingMode mode;
+    int grow;
+    int shrink;
+    float min;
+    float max;
+};
+
+struct Padding{
+    float left,right,top,bottom;
 };
 
 struct UIElement{
     Vec2 pos;
-    Vec2 size;
+    std::string id;
+    Edge width;
+    Edge height;
     UIElement* parent;
-    Orientation orientation;
+    OrderDirection direction;
+    Color bg_color;
+    Padding padding;
+    float child_gap;
     std::vector<std::unique_ptr<UIElement>> children;
+
+    UIElement();
+
 };
 
-void computeLayout(UIElement* root);
 void computeSize(UIElement* element);
+void growElement(UIElement* element);
+void computeLayout(UIElement* root);
+void computePosition(UIElement* root);

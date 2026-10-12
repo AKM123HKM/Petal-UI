@@ -146,7 +146,6 @@ void ButtonWidget::update(Mouse& mouse){
     if(isHovering(mouse.mouse_pos)){
         active_color = hover_color;
         if (mouse.isClicked(MouseButtonType::Left)){
-            // std::cout << "Button clicked: " << text << std::endl;
             active_color = bg_color;
         }
     }

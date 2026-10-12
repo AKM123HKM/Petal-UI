@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include "json.hpp"
 #include <iostream>
 #include <variant>
@@ -213,6 +212,7 @@ class GroupWidget:public Widget{
 class UI{
 public:
     std::vector<std::unique_ptr<Widget>> widgets;
+    UIElement root_element;
     std::vector<Element> frame_render_buffer;
     Mouse mouse;
 
