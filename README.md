@@ -6,3 +6,9 @@ I am trying to make a library of sort where I define the UI hierarchy using json
 As of now, i have implemented just buttons and sliders and nested groups of these elements.
 
 ![Project Showcase](assets/showcase.gif)
+
+
+Separately I am implementing a layout library whilch will calculate sizes and positions of the elements for my UI library. As of now both are kind of working independently which i will later combine. I wrote some temporary functions and a temporary json file to draw some rectangles on the screen to see
+if the layout is being calculated correctly or not.
+
+![Layout Calculator](assets/layout_showcase.gif)
