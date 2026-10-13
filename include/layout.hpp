@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <array>
+#include <cmath>
 
 struct Vec2{
     float x,y;
@@ -49,7 +50,6 @@ struct Padding{
 
 struct UIElement{
     Vec2 pos;
-    std::string id;
     Edge width;
     Edge height;
     UIElement* parent;

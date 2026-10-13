@@ -7,6 +7,7 @@
 
 using json = nlohmann::json;
 
+// TEMPORARY
 SizingMode getMode(const json& data){
     std::string mode = data;
     if (mode == "fill"){
@@ -33,9 +34,9 @@ void drawText(sf::RenderWindow& window, TextElement* element, sf::Font& font){
     window.draw(text);
 }
 
+// TEMPORARY
 UIElement parseElementData(json& data,UIElement* parent){
     UIElement element;
-    element.id = data.at("id");
     if(data.contains("direction")){
     element.direction = data.at("direction") == "column" ? OrderDirection::Col : OrderDirection::Row;}
     else{
@@ -74,6 +75,7 @@ UIElement parseElementData(json& data,UIElement* parent){
     return element;
 }
 
+// TEMPORARY
 void printTree(UIElement* root){
     std::cout << "pos: " << root->pos.x << ", " << root->pos.y << std::endl;
     std::cout << "size: " << root->width.value << ", " << root->height.value << std::endl;
@@ -84,6 +86,7 @@ void printTree(UIElement* root){
     }
 }
 
+// TEMPORARY
 void drawTree(sf::RenderWindow& window, UIElement* element){
     sf::RectangleShape rect(sf::Vector2f(element->width.value,element->height.value));
     rect.setPosition(sf::Vector2f(element->pos.x, element->pos.y));
@@ -155,9 +158,7 @@ int main() {
         ui.mouse.updateLeftMouseButton((sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)));
 
         ui.update();
-        computeLayout(&root);
-        // printTree(&root);
-        
+        computeLayout(&root);        
 
         window.clear();
 
@@ -172,7 +173,6 @@ int main() {
         //     }, element);
         // }
         drawTree(window,&root);
-
         window.draw(ms_text);
 
         window.display();

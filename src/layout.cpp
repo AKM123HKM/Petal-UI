@@ -31,6 +31,13 @@ std::ostream& operator<<(std::ostream& os,const Vec2& v){
 
 UIElement::UIElement(){
     pos = Vec2{0,0};
+    width.value = 0;
+    height.value = 0;
+    width.min = 0;
+    width.max = INFINITY;
+    height.min = 0;
+    height.max = INFINITY;
+    bg_color = {0,0,0};
 }
 
 void computeSize(UIElement* element){
@@ -42,21 +49,17 @@ void computeSize(UIElement* element){
     for (auto& child: element->children){
         if (element->width.mode == SizingMode::Fit){
             if(element->direction == OrderDirection::Row){
-                // element->width.value += child->width.value;
                 width += child->width.value;
             }
             else{
-                // element->width.value = std::max(child->width.value, element->width.value);
                 width = std::max(child->width.value,width);
             }
         }
         if (element->height.mode == SizingMode::Fit){
             if (element->direction == OrderDirection::Col){
-                // element->height.value += child->height.value;
                 height += child->height.value;
             }
             else{
-                // element->height.value = std::max(child->height.value, element->height.value);
                 height = std::max(child->height.value, height);
             }
         }
@@ -70,28 +73,41 @@ void computeSize(UIElement* element){
     }
 
     if (element->width.mode == SizingMode::Fit){
-        // element->width.value += element->padding.left + element->padding.right;
         width += element->padding.left + element->padding.right;
         if (element->direction == OrderDirection::Row){
-            // element->width.value += (element->children.size() - 1) * element->child_gap;
             width += (element->children.size() - 1) * element->child_gap;
         }
     }
 
     if (element->height.mode == SizingMode::Fit){
-        // element->height.value += element->padding.top + element->padding.bottom;
         height += element->padding.top + element->padding.bottom;
         if (element->direction == OrderDirection::Col){
-            // element->height.value += (element->children.size() - 1) * element->child_gap;
             height += (element->children.size() - 1) * element->child_gap;
         }
     }
 
     if (element->width.mode == SizingMode::Fit){
-        element->width.value = width;
+        if (width < element->width.min){
+            element->width.value = element->width.min;
+        }
+        else if (width > element->width.max){
+            element->width.value = element->width.max;
+        }
+        else {
+            element->width.value = width;
+        }
     }
+
     if (element->height.mode == SizingMode::Fit){
-        element->height.value = height;
+        if (height < element->height.min){
+            element->height.value = element->height.min;
+        }
+        else if (height > element->height.max){
+            element->height.value = element->height.max;
+        }
+        else {
+            element->height.value = height;
+        }
     }
 }
 
@@ -124,22 +140,49 @@ void growElement(UIElement* element){
     remaining_width -= element->padding.left + element->padding.right;
     remaining_height -= element->padding.top + element->padding.bottom;
     
-    
+    float new_width = 0.0f, new_height = 0.0f;
     for (auto& child: element->children){
         if (child->width.grow){
+            float temp_width = child->width.value;
             if (element->direction == OrderDirection::Col){
-                child->width.value += remaining_width - child->width.value;
+                float change_in_width = remaining_width - temp_width;
+                new_width = temp_width + change_in_width;
             }
             else{
-                child->width.value += remaining_width * (child->width.grow / net_width_grow);
+                float change_in_width = remaining_width * (child->width.grow / net_width_grow);
+                new_width = temp_width + change_in_width;
             }
+
+            if (new_width < child->width.min){
+                child->width.value = child->width.min;
+            }
+            else if (new_width > child->width.max){
+                child->width.value = child->width.max;
+            }
+            else {
+                child->width.value = new_width;
+            }
+
         }
         if (child->height.grow){
+            float temp_height = child->height.value;
             if (element->direction == OrderDirection::Row){
-                child->height.value += remaining_height - child->height.value;
+                float change_in_height = remaining_height - temp_height;
+                new_height = temp_height + change_in_height;
             }
             else{
-                child->height.value += remaining_height * (child->height.grow / net_height_grow);
+                float change_in_height = remaining_height * (child->height.grow / net_height_grow);
+                new_height = temp_height + change_in_height;
+            }
+
+            if (new_height < child->height.min){
+                child->height.value = child->height.min;
+            }
+            else if (new_height > child->height.max){
+                child->height.value = child->height.max;
+            }
+            else {
+                child->height.value = new_height;
             }
         }
     }

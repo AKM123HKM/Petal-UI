@@ -1,5 +1,5 @@
 #include "UI.hpp"
-#include <iostream> 
+#include <iostream>
 
 std::ostream& operator<<(std::ostream& os,WidgetType type){
     switch(type){
